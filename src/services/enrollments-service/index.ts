@@ -1,28 +1,35 @@
-import { request } from "@/utils/request";
-import { notFoundError, requestError } from "@/errors";
+import { AddressEnrollment } from "@/protocols";
+import { getAddress } from "@/utils/cep-service";
+import { notFoundError } from "@/errors";
 import addressRepository, { CreateAddressParams } from "@/repositories/address-repository";
 import enrollmentRepository, { CreateEnrollmentParams } from "@/repositories/enrollment-repository";
 import { exclude } from "@/utils/prisma-utils";
 import { Address, Enrollment } from "@prisma/client";
-import { ViaCEPAddress } from "@/protocols";
 
-async function getAddressFromCEP(cep: string): Promise<ViaCEPAddress> {
-  const result = await request.get(`https://viacep.com.br/ws/${cep}/json/`);
+async function getAddressFromCEP(cep: string): Promise<AddressEnrollment> {
+  const result = await getAddress(cep);
 
-  if (!result.data) {
-    throw notFoundError();
+  if (!result) {
+    throw notFoundError(); //lançar -> pro arquivo que chamou essa função
   }
 
-  const adress = result.data;
-  const returnAdress: ViaCEPAddress = {
-    bairro: adress.bairro,
-    cidade: adress.localidade,
-    complemento: adress.complemento,
-    logradouro: adress.logradouro,
-    uf: adress.uf
+  const {
+    bairro,
+    localidade,
+    uf,
+    complemento,
+    logradouro
+  } = result;
+
+  const address = {
+    bairro,
+    cidade: localidade,
+    uf,
+    complemento,
+    logradouro
   };
 
-  return returnAdress;
+  return address;
 }
 
 async function getOneWithAddressByUserId(userId: number): Promise<GetOneWithAddressByUserIdResult> {
@@ -53,9 +60,10 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   const enrollment = exclude(params, "address");
   const address = getAddressForUpsert(params.address);
 
-  const cep = params.address.cep;
-  const result = await request.get(`https://viacep.com.br/ws/${cep}/json/`);
-  if (result.data.erro) {
+  //TODO - Verificar se o CEP é válido
+
+  const result = await getAddressFromCEP(address.cep);
+  if (result.error) {
     throw notFoundError();
   }
 
