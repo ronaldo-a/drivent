@@ -16,6 +16,12 @@ async function getTicket(enrollmentId: number) {
   });
 }
 
+async function getTicketById(id: number) {
+  return prisma.ticket.findFirst({
+    where: { id }
+  });
+}
+
 async function insertTicket(enrollmentId: number, ticketTypeId: number) {
   return prisma.ticket.create({
     data: {
@@ -30,6 +36,7 @@ const ticketRepository = {
   getTypes,
   getTypeById,
   getTicket,
+  getTicketById,
   insertTicket
 };
 

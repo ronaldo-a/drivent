@@ -29,7 +29,7 @@ export type UpdateEnrollmentParams = Omit<CreateEnrollmentParams, "userId">;
 
 const enrollmentRepository = {
   findWithAddressByUserId,
-  upsert,
+  upsert
 };
 
 export default enrollmentRepository;
