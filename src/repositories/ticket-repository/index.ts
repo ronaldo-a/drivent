@@ -32,12 +32,24 @@ async function insertTicket(enrollmentId: number, ticketTypeId: number) {
   });
 }
 
+async function updateTicket(ticketId: number) {
+  return prisma.ticket.update({
+    where: {
+      id: ticketId
+    },
+    data: {
+      status: "PAID"
+    }
+  });
+}
+
 const ticketRepository = {
   getTypes,
   getTypeById,
   getTicket,
   getTicketById,
-  insertTicket
+  insertTicket,
+  updateTicket
 };
 
 export default ticketRepository;
