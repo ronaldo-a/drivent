@@ -7,10 +7,12 @@ async function getHotels(userId: number) {
   const enrollmentId = (await enrollmentRepository.findWithAddressByUserId(userId)).id;
   const ticketId = await ticketRepository.getTicket(enrollmentId);
   const ticketTypeId = ticketId.ticketTypeId;
-  const doesIncludesHotel = (await ticketRepository.getTypeById(ticketTypeId)).includesHotel;
+  const ticketType = (await ticketRepository.getTypeById(ticketTypeId));
+  const doesIncludesHotel = ticketType.includesHotel;
+  const isRemote = ticketType.isRemote;
   const ticketPaymentStatus = ticketId.status;
 
-  if (!doesIncludesHotel || ticketPaymentStatus !== "PAID") {
+  if (!doesIncludesHotel || isRemote === true || ticketPaymentStatus !== "PAID") {
     throw unauthorizedError();
   }
 
@@ -22,18 +24,21 @@ async function getRooms(userId: number, hotelId: number) {
   const enrollmentId = (await enrollmentRepository.findWithAddressByUserId(userId)).id;
   const ticketId = await ticketRepository.getTicket(enrollmentId);
   const ticketTypeId = ticketId.ticketTypeId;
-  const doesIncludesHotel = (await ticketRepository.getTypeById(ticketTypeId)).includesHotel;
+  const ticketType = (await ticketRepository.getTypeById(ticketTypeId));
+  const doesIncludesHotel = ticketType.includesHotel;
+  const isRemote = ticketType.isRemote;
   const ticketPaymentStatus = ticketId.status;
-  if (!doesIncludesHotel || ticketPaymentStatus !== "PAID") {
+  
+  if (!doesIncludesHotel || isRemote === true || ticketPaymentStatus !== "PAID") {
     throw unauthorizedError();
   }
   
   const hotelEntity = await hotelRepository.searchHotelById(hotelId);
-
-  const rooms = await hotelRepository.searchRooms(hotelId);
-  if (!rooms) {
+  if (!hotelEntity) {
     throw notFoundError();
   }
+
+  const rooms = await hotelRepository.searchRooms(hotelId);
 
   const roomsReturn = { ...hotelEntity, Rooms: rooms };
 
