@@ -68,14 +68,3 @@ export type Payment = {
   cardIssuer: string, // VISA | MASTERCARD
   cardLastDigits: string
 }
-
-export type RoomReturn = {
-  id: number
-  name: string,
-  capacity: number,
-  hotelId: number,
-  hotel: {
-    name: string,
-    image: string
-  }
-}

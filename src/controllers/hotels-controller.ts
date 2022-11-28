@@ -15,10 +15,11 @@ async function listHotels(req: AuthenticatedRequest, res: Response) {
 }
 
 async function listRooms(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req;
   const hotelId = Number(req.params.hotelId);
 
   try {
-    const rooms = await hotelsService.getRooms(hotelId);
+    const rooms = await hotelsService.getRooms(userId, hotelId);
     return res.status(httpStatus.OK).send(rooms);
   } catch (error) {
     return res.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
