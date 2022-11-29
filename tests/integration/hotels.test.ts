@@ -204,7 +204,9 @@ describe("GET: hotels/:hotelId", () => {
     
       expect(response.status).toBe(httpStatus.OK);
       expect(response.body).toEqual({
-        hotels,
+        ...hotels,
+        createdAt: hotels.createdAt.toISOString(),
+        updatedAt: hotels.updatedAt.toISOString(),
         Rooms: []
       });
     });
@@ -217,14 +219,19 @@ describe("GET: hotels/:hotelId", () => {
       const token = await generateValidToken(user);
     
       const hotel = await createHotel();
+      const hotelId = (hotel.id).toString();
       const room = await createRoom(hotel.id);
     
-      const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
+      const response = await server.get("/hotels/".concat(hotelId)).set("Authorization", `Bearer ${token}`);
     
       expect(response.status).toBe(httpStatus.OK);
       expect(response.body).toEqual({
         ...hotel,
-        Rooms: [room]
+        createdAt: hotel.createdAt.toISOString(),
+        updatedAt: hotel.updatedAt.toISOString(),
+        Rooms: [{ ...room, 
+          createdAt: room.createdAt.toISOString(),
+          updatedAt: room.updatedAt.toISOString() }]
       });
     });
   });
