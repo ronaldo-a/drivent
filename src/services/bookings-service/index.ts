@@ -16,6 +16,11 @@ async function getBooking(userId: number) {
 }
 
 async function insertBooking(userId: number, roomId: number) {
+  const room = await hotelRepository.searchRoomById(roomId);
+  if (!room) {
+    throw notFoundError();
+  }
+
   const enrollmentId = (await enrollmentRepository.findWithAddressByUserId(userId)).id;
   const ticket = await ticketRepository.getTicket(enrollmentId);
   const ticketType = await ticketRepository.getTypeById(ticket.ticketTypeId);
@@ -33,9 +38,30 @@ async function insertBooking(userId: number, roomId: number) {
   return bookingId.id;
 }
 
+async function changeBooking(userId: number, bookingId: number, roomId: number) {
+  const booking = await bookingRepository.searchBooking(userId);
+  if (!booking) {
+    throw unauthorizedError();
+  }
+
+  const room = await hotelRepository.searchRoomById(roomId);
+  if (!room) {
+    throw notFoundError();
+  }
+
+  const roomBookingsNumber = (await bookingRepository.searchBookingsByRoomId(roomId)).length;
+  if (roomBookingsNumber === room.capacity) {
+    throw unauthorizedError();
+  }
+
+  const bookingUpdateId = (await bookingRepository.putBooking(bookingId, roomId)).id;
+  return bookingUpdateId;
+}
+
 const bookingsService = {
   getBooking,
-  insertBooking
+  insertBooking,
+  changeBooking
 };
 
 export default bookingsService;

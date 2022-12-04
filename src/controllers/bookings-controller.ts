@@ -10,7 +10,11 @@ async function listBooking(req: AuthenticatedRequest, res: Response) {
     const booking = await bookingsService.getBooking(userId);
     return res.status(httpStatus.OK).send(booking);
   } catch (error) {
-    return res.sendStatus(httpStatus.NOT_FOUND);
+    if (error.name === "NotFoundError") {
+      return res.sendStatus(httpStatus.NOT_FOUND);
+    } else {
+      return res.sendStatus(httpStatus.UNAUTHORIZED);
+    }
   }
 }
 
@@ -22,7 +26,26 @@ async function postBooking(req: AuthenticatedRequest, res: Response) {
     const bookingId = await bookingsService.insertBooking(userId, roomId);
     return res.status(httpStatus.OK).send(bookingId); 
   } catch (error) {
-    if (error.name === "UnauthorizedError") {
+    if (error.name === "NotFoundError") {
+      return res.sendStatus(httpStatus.NOT_FOUND);
+    } else {
+      return res.sendStatus(403);
+    }
+  }
+}
+
+async function updateBooking(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req;
+  const bookingId = Number(req.params.bookingId);
+  const { roomId } = req.body;
+
+  try {
+    const bookingUpdate = await bookingsService.changeBooking(userId, bookingId, roomId);
+    return res.status(httpStatus.OK).send(bookingUpdate);
+  } catch (error) {
+    if (error.name === "NotFoundError") {
+      return res.sendStatus(httpStatus.NOT_FOUND);
+    } else {
       return res.sendStatus(403);
     }
   }
@@ -30,5 +53,6 @@ async function postBooking(req: AuthenticatedRequest, res: Response) {
 
 export {
   listBooking,
-  postBooking
+  postBooking,
+  updateBooking
 };
