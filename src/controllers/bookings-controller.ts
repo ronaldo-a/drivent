@@ -12,8 +12,6 @@ async function listBooking(req: AuthenticatedRequest, res: Response) {
   } catch (error) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
-    } else {
-      return res.sendStatus(httpStatus.UNAUTHORIZED);
     }
   }
 }
@@ -23,13 +21,13 @@ async function postBooking(req: AuthenticatedRequest, res: Response) {
   const { roomId } = req.body;
 
   try {
-    const bookingId = await bookingsService.insertBooking(userId, roomId);
-    return res.status(httpStatus.OK).send(bookingId); 
+    const booking = await bookingsService.insertBooking(userId, roomId);
+    return res.status(httpStatus.OK).send({ bookingId: booking.id }); 
   } catch (error) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
-    } else {
-      return res.sendStatus(403);
+    } else if (error.name === "ForbiddenError") {
+      return res.sendStatus(httpStatus.FORBIDDEN);
     }
   }
 }
@@ -41,12 +39,12 @@ async function updateBooking(req: AuthenticatedRequest, res: Response) {
 
   try {
     const bookingUpdate = await bookingsService.changeBooking(userId, bookingId, roomId);
-    return res.status(httpStatus.OK).send(bookingUpdate);
+    return res.status(httpStatus.OK).send({ bookingId: bookingUpdate });
   } catch (error) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
-    } else {
-      return res.sendStatus(403);
+    } else if (error.name === "ForbiddenError") {
+      return res.sendStatus(httpStatus.FORBIDDEN);
     }
   }
 }

@@ -14,7 +14,7 @@ export async function createRoom(hotelId: number) {
   return prisma.room.create({
     data: {
       name: faker.company.companyName(),
-      capacity: Math.floor((Math.random()*10)),
+      capacity: 1,
       hotelId: hotelId
     }
   });
